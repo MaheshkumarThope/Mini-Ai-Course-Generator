@@ -1,0 +1,72 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">Course Dashboard</h1>
+      <p class="text-lg text-gray-700">Explore and enroll in our comprehensive course catalog</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-red-800 font-semibold">{{ error }}</p>
+    </div>
+
+    <!-- Courses Grid -->
+    <div *ngIf="!loading && courses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        *ngFor="let course of courses"
+        class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-6"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-bold text-gray-900 flex-1">{{ course.title }}</h3>
+          <span
+            class="px-3 py-1 text-sm font-semibold rounded-full"
+            [ngClass]="{
+              'bg-green-100 text-green-800': course.level === 'Beginner',
+              'bg-yellow-100 text-yellow-800': course.level === 'Intermediate',
+              'bg-red-100 text-red-800': course.level === 'Advanced'
+            }"
+          >
+            {{ course.level }}
+          </span>
+        </div>
+        
+        <p class="text-gray-600 mb-4 line-clamp-2">{{ course.description }}</p>
+        
+        <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+          <span>⏱️ {{ course.duration }}</span>
+          <span *ngIf="course.relevanceScore" class="font-semibold text-indigo-600">
+            Match: {{ (course.relevanceScore * 100).toFixed(0) }}%
+          </span>
+        </div>
+
+        <div *ngIf="course.prerequisites && course.prerequisites.length > 0" class="mb-4">
+          <p class="text-xs text-gray-500 font-semibold mb-2">Prerequisites:</p>
+          <div class="flex flex-wrap gap-2">
+            <span
+              *ngFor="let prereq of course.prerequisites"
+              class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+            >
+              {{ prereq }}
+            </span>
+          </div>
+        </div>
+
+        <button
+          class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+        >
+          Enroll Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && courses.length === 0" class="text-center py-12">
+      <p class="text-gray-600 text-lg">No courses available at the moment</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,405 @@
+<div class="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 p-8">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-4xl font-bold text-gray-900 mb-12">Document & Resume Upload</h1>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+      <p class="text-green-800 font-semibold">✓ {{ successMessage }}</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-red-800 font-semibold">✗ {{ error }}</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Resume Upload Section -->
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="flex items-center mb-6">
+          <div class="text-4xl mr-4">📄</div>
+          <h2 class="text-2xl font-bold text-gray-900">Upload Your Resume</h2>
+        </div>
+        <p class="text-gray-600 mb-6">Upload your resume to get personalized course recommendations</p>
+
+        <div
+          class="border-2 border-dashed border-purple-300 rounded-lg p-8 text-center hover:border-purple-500 transition-colors duration-200 cursor-pointer"
+          (click)="resumeInput.click()"
+        >
+          <input
+            #resumeInput
+            type="file"
+            accept=".pdf,.doc,.docx,.txt"
+            (change)="onFileSelected($event, true)"
+            class="hidden"
+            [disabled]="uploading"
+          />
+          <div class="text-5xl mb-4">📤</div>
+          <p class="text-lg font-semibold text-gray-700 mb-2">Click to upload resume</p>
+          <p class="text-sm text-gray-500">Supported formats: PDF, DOC, DOCX, TXT</p>
+        </div>
+
+        <div *ngIf="uploadedResume" class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <p class="text-sm text-gray-600 mb-2">Current Resume:</p>
+          <p class="font-semibold text-gray-900">{{ uploadedResume.filename }}</p>
+          <p class="text-xs text-gray-500 mt-2">Uploaded: {{ uploadedResume.uploadDate | date }}</p>
+        </div>
+
+        <div *ngIf="uploading" class="mt-6 flex justify-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        </div>
+      </div>
+
+      <!-- General Documents Upload Section -->
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="flex items-center mb-6">
+          <div class="text-4xl mr-4">📚</div>
+          <h2 class="text-2xl font-bold text-gray-900">Upload Course Materials</h2>
+        </div>
+        <p class="text-gray-600 mb-6">Upload course materials, assignments, or reference documents</p>
+
+        <div
+          class="border-2 border-dashed border-indigo-300 rounded-lg p-8 text-center hover:border-indigo-500 transition-colors duration-200 cursor-pointer"
+          (click)="documentsInput.click()"
+        >
+          <input
+            #documentsInput
+            type="file"
+            (change)="onFileSelected($event, false)"
+            class="hidden"
+            [disabled]="uploading"
+          />
+          <div class="text-5xl mb-4">📁</div>
+          <p class="text-lg font-semibold text-gray-700 mb-2">Click to upload files</p>
+          <p class="text-sm text-gray-500">Any file type supported</p>
+        </div>
+
+        <div *ngIf="documents.length > 0" class="mt-8">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Your Documents</h3>
+          <div class="space-y-3">
+            <div
+              *ngFor="let doc of documents"
+              class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+            >
+              <div>
+                <p class="font-semibold text-gray-900">{{ doc.filename }}</p>
+                <p class="text-xs text-gray-500">{{ doc.uploadDate | date }} • {{ (doc.size / 1024).toFixed(1) }} KB</p>
+              </div>
+              <button
+                (click)="deleteDocument(doc.id)"
+                class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations Section -->
+    <div *ngIf="parsedCourses.length > 0 || recommendations" class="mt-12 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-8 shadow-lg">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-3xl font-bold text-gray-900">🎯 Your Personalized Course Recommendations</h2>
+        <button
+          (click)="showHistory = !showHistory"
+          *ngIf="recommendationsHistory.length > 0"
+          class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors"
+        >
+          📋 History ({{ recommendationsHistory.length }})
+        </button>
+      </div>
+      
+      <p class="text-gray-700 mb-8 text-lg">Generated recommendations based on your profile and career goals.</p>
+      
+      <!-- Recommendations History -->
+      <div *ngIf="showHistory" class="mb-8 bg-white rounded-lg p-6 shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-gray-900">Previous Recommendations</h3>
+          <button
+            (click)="clearHistory()"
+            class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm rounded transition-colors"
+          >
+            Clear All
+          </button>
+        </div>
+        
+        <div class="space-y-2">
+          <button
+            *ngFor="let item of recommendationsHistory; let i = index"
+            (click)="viewCachedRecommendation(i)"
+            class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded border border-gray-200 transition-colors"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-gray-900">Recommendation Set #{{ i + 1 }} ({{ item.courses.length }} courses)</span>
+              <span class="text-sm text-gray-500">{{ item.timestamp | date: 'short' }}</span>
+            </div>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Courses Grid - Show only titles initially -->
+      <div *ngIf="parsedCourses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div
+          *ngFor="let course of parsedCourses; let i = index"
+          (click)="toggleCourse(i)"
+          class="cursor-pointer transform transition-all duration-300"
+          [class.scale-105]="expandedCourseIndex === i"
+        >
+          <!-- Course Title Card -->
+          <div
+            [class.ring-2]="expandedCourseIndex === i"
+            [class.ring-indigo-600]="expandedCourseIndex === i"
+            class="bg-gradient-to-br from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex items-center justify-center min-h-40"
+          >
+            <div class="text-center">
+              <div class="text-3xl mb-3">📚</div>
+              <h3 class="text-xl font-bold leading-tight">{{ course.title }}</h3>
+              <p class="text-blue-100 text-sm mt-3">Click to view details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expanded Course Details -->
+      <div
+        *ngIf="expandedCourseIndex !== null && parsedCourses[expandedCourseIndex]"
+        class="bg-white rounded-lg p-8 shadow-2xl border-l-4 border-indigo-600 mb-8 animate-fadeIn"
+      >
+        <div class="mb-6">
+          <button
+            (click)="expandedCourseIndex = null"
+            class="text-indigo-600 hover:text-indigo-700 font-semibold mb-4 flex items-center"
+          >
+            ← Back to Courses
+          </button>
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ parsedCourses[expandedCourseIndex].title }}</h2>
+        </div>
+
+        <!-- Why It's Valuable -->
+        <div class="mb-8">
+          <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center">
+            <span class="text-2xl mr-3">💡</span>Why This Course Is Valuable
+          </h3>
+          <div class="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-500">
+            <p class="text-gray-800 text-lg leading-relaxed whitespace-pre-wrap">
+              {{ parsedCourses[expandedCourseIndex].whyValuable }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Estimated Time -->
+        <div class="mb-8">
+          <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center">
+            <span class="text-2xl mr-3">⏱️</span>Estimated Time to Complete
+          </h3>
+          <div class="bg-green-50 rounded-lg p-6 border-l-4 border-green-500">
+            <p class="text-gray-800 text-lg font-semibold">
+              {{ parsedCourses[expandedCourseIndex].estimatedTime }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Career Impact -->
+        <div class="mb-8">
+          <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center">
+            <span class="text-2xl mr-3">🚀</span>Expected Career Impact
+          </h3>
+          <div class="bg-purple-50 rounded-lg p-6 border-l-4 border-purple-500">
+            <p class="text-gray-800 text-lg leading-relaxed whitespace-pre-wrap">
+              {{ parsedCourses[expandedCourseIndex].careerImpact }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 pt-6 border-t border-gray-200">
+          <button
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105"
+          >
+            Enroll Now →
+          </button>
+          <button
+            (click)="expandedCourseIndex = null"
+            class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold rounded-lg transition-all duration-200"
+          >
+            View Other Courses
+          </button>
+        </div>
+      </div>
+
+      <!-- No Courses Message -->
+      <div *ngIf="parsedCourses.length === 0 && recommendations" class="bg-white rounded-lg p-8 shadow text-center">
+        <p class="text-gray-600 text-lg">Generating your personalized recommendations...</p>
+        <div class="mt-4 flex justify-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILED COURSE VIEW -->
+    <div *ngIf="detailedCourses.length > 0" class="mt-16">
+      <h2 class="text-3xl font-bold text-gray-900 mb-8">📚 Course Details</h2>
+
+      <!-- Course Selection Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div *ngFor="let course of detailedCourses; let i = index"
+             (click)="selectCourse(i)"
+             [class.ring-2]="selectedCourseIndex === i"
+             [class.ring-indigo-500]="selectedCourseIndex === i"
+             class="bg-white rounded-xl shadow-md hover:shadow-xl p-6 cursor-pointer transition-all duration-300 transform hover:scale-105">
+          <div class="text-4xl mb-3">📖</div>
+          <h3 class="text-xl font-bold text-gray-900 line-clamp-2 mb-2">{{ course.courseTitle }}</h3>
+          <div class="flex items-center text-sm text-gray-600 mb-2">
+            <span class="mr-4">⏱️ {{ course.estimatedDuration }}</span>
+          </div>
+          <div class="text-xs font-semibold text-indigo-600">
+            {{ course.modules.length }} Modules • {{ course.keySkillsGained.length }} Skills
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Course Content -->
+      <div *ngIf="selectedCourseIndex !== null && detailedCourses[selectedCourseIndex]" 
+           class="bg-white rounded-xl shadow-xl overflow-hidden">
+        
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 p-12 text-white">
+          <h1 class="text-4xl font-bold mb-4">{{ detailedCourses[selectedCourseIndex].courseTitle }}</h1>
+          <p class="text-xl text-indigo-100 mb-6">{{ detailedCourses[selectedCourseIndex].courseDescription }}</p>
+          
+          <!-- Key Metrics -->
+          <div class="grid grid-cols-3 gap-6 mt-8">
+            <div class="bg-white bg-opacity-20 rounded-lg p-4">
+              <div class="text-3xl mb-2">⏱️</div>
+              <p class="text-sm font-semibold text-indigo-100">Duration</p>
+              <p class="text-2xl font-bold">{{ detailedCourses[selectedCourseIndex].estimatedDuration }}</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-lg p-4">
+              <div class="text-3xl mb-2">📚</div>
+              <p class="text-sm font-semibold text-indigo-100">Modules</p>
+              <p class="text-2xl font-bold">{{ detailedCourses[selectedCourseIndex].modules.length }}</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-lg p-4">
+              <div class="text-3xl mb-2">🎯</div>
+              <p class="text-sm font-semibold text-indigo-100">Skills</p>
+              <p class="text-2xl font-bold">{{ detailedCourses[selectedCourseIndex].keySkillsGained.length }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Sections -->
+        <div class="p-8 md:p-12">
+          
+          <!-- Learning Objectives -->
+          <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <span class="text-2xl mr-3">🎓</span>Learning Objectives
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div *ngFor="let objective of detailedCourses[selectedCourseIndex].learningObjectives"
+                   class="flex items-start p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                <span class="text-2xl mr-3">✓</span>
+                <p class="text-gray-700">{{ objective }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prerequisites -->
+          <div class="mb-12" *ngIf="detailedCourses[selectedCourseIndex].prerequisites.length > 0">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <span class="text-2xl mr-3">📋</span>Prerequisites
+            </h2>
+            <div class="bg-yellow-50 rounded-lg border border-yellow-200 p-6">
+              <ul class="space-y-3">
+                <li *ngFor="let prerequisite of detailedCourses[selectedCourseIndex].prerequisites"
+                    class="flex items-start">
+                  <span class="text-yellow-600 mr-3">•</span>
+                  <span class="text-gray-700">{{ prerequisite }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Key Skills Gained -->
+          <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <span class="text-2xl mr-3">🚀</span>Key Skills You'll Gain
+            </h2>
+            <div class="flex flex-wrap gap-3">
+              <span *ngFor="let skill of detailedCourses[selectedCourseIndex].keySkillsGained"
+                    class="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 rounded-full font-semibold border border-green-300">
+                {{ skill }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Course Modules -->
+          <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <span class="text-2xl mr-3">📖</span>Course Modules
+            </h2>
+            <div class="space-y-4">
+              <div *ngFor="let module of detailedCourses[selectedCourseIndex].modules; let moduleIdx = index"
+                   class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300"
+                   [class.ring-2]="expandedModuleIndex === moduleIdx"
+                   [class.ring-indigo-500]="expandedModuleIndex === moduleIdx">
+                
+                <!-- Module Header (Clickable) -->
+                <div (click)="toggleModule(moduleIdx)"
+                     class="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 cursor-pointer hover:from-indigo-100 hover:to-blue-100 transition-colors duration-200 flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="text-3xl font-bold text-indigo-600 mr-4 bg-white rounded-full w-12 h-12 flex items-center justify-center">
+                      {{ module.moduleNumber }}
+                    </span>
+                    <div>
+                      <h3 class="text-xl font-bold text-gray-900">{{ module.moduleTitle }}</h3>
+                      <p class="text-sm text-gray-600 mt-1">{{ module.topics.length }} Topics</p>
+                    </div>
+                  </div>
+                  <span class="text-2xl transform transition-transform duration-300"
+                        [style.transform]="expandedModuleIndex === moduleIdx ? 'rotate(180deg)' : 'rotate(0deg)'">
+                    ▼
+                  </span>
+                </div>
+
+                <!-- Module Content (Expandable) -->
+                <div *ngIf="expandedModuleIndex === moduleIdx"
+                     class="bg-white p-6 border-t border-gray-200 animate-fadeIn">
+                  <p class="text-gray-700 mb-6 leading-relaxed">{{ module.moduleDescription }}</p>
+                  
+                  <div class="mb-4">
+                    <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                      <span class="text-xl mr-2">📌</span>Topics Covered
+                    </h4>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <li *ngFor="let topic of module.topics"
+                          class="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span class="text-indigo-600 mr-3 mt-1">→</span>
+                        <span class="text-gray-700">{{ topic }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-4 pt-8 border-t border-gray-200">
+            <button class="flex-1 px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105 text-lg">
+              Enroll in Course →
+            </button>
+            <button (click)="selectCourse(-1)"
+                    class="flex-1 px-6 py-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold rounded-lg transition-all duration-200">
+              Back to Courses
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Selection Message -->
+      <div *ngIf="selectedCourseIndex === null && detailedCourses.length > 0"
+           class="bg-white rounded-xl p-12 shadow text-center">
+        <p class="text-gray-600 text-lg">👆 Click a course card above to view detailed information</p>
+      </div>
+    </div>

@@ -1,0 +1,65 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Navigation Header -->
+  <nav class="bg-gradient-to-r from-indigo-600 to-blue-600 shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-8 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">🎓</div>
+          <h1 class="text-2xl font-bold text-white">Mini-AI Course Generator</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <button
+            (click)="setActiveTab('dashboard')"
+            [ngClass]="{
+              'bg-white text-indigo-600': activeTab() === 'dashboard',
+              'text-white hover:bg-white hover:bg-opacity-20': activeTab() !== 'dashboard'
+            }"
+            class="px-6 py-2 rounded-full font-semibold transition-all duration-200"
+          >
+            📚 Dashboard
+          </button>
+          <button
+            (click)="setActiveTab('upload')"
+            [ngClass]="{
+              'bg-white text-indigo-600': activeTab() === 'upload',
+              'text-white hover:bg-white hover:bg-opacity-20': activeTab() !== 'upload'
+            }"
+            class="px-6 py-2 rounded-full font-semibold transition-all duration-200"
+          >
+            📤 Upload
+          </button>
+          <button
+            (click)="setActiveTab('recommendations')"
+            [ngClass]="{
+              'bg-white text-indigo-600': activeTab() === 'recommendations',
+              'text-white hover:bg-white hover:bg-opacity-20': activeTab() !== 'recommendations'
+            }"
+            class="px-6 py-2 rounded-full font-semibold transition-all duration-200"
+          >
+            ⭐ Suggestions
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="transition-all duration-300">
+    <div *ngIf="activeTab() === 'dashboard'">
+      <app-dashboard></app-dashboard>
+    </div>
+    <div *ngIf="activeTab() === 'upload'">
+      <app-document-upload></app-document-upload>
+    </div>
+    <div *ngIf="activeTab() === 'recommendations'">
+      <app-course-suggestions></app-course-suggestions>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-8 text-center">
+      <p>&copy; 2026 Mini-AI Course Generator. All rights reserved. Powered by AI.</p>
+    </div>
+  </footer>
+</div>
