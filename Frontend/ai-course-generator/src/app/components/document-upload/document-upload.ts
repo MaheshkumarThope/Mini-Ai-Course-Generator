@@ -3,12 +3,6 @@ import { CommonModule } from '@angular/common';
 import { DocumentService, IDocument } from '../../services/document';
 import { CourseService, IRecommendation } from '../../services/course';
 
-@Component({
-  selector: 'app-document-upload',
-  imports: [CommonModule],
-  templateUrl: './document-upload.html',
-  styleUrl: './document-upload.css',
-})
 export interface IModule {
   moduleNumber: number;
   moduleTitle: string;
@@ -34,6 +28,12 @@ export interface ICourseDetail {
   careerImpact: string;
 }
 
+@Component({
+  selector: 'app-document-upload',
+  imports: [CommonModule],
+  templateUrl: './document-upload.html',
+  styleUrl: './document-upload.css',
+})
 export class DocumentUpload implements OnInit {
   @Output() resumeUploaded = new EventEmitter<IDocument>();
   @Output() recommendationsReceived = new EventEmitter<IRecommendation>();
@@ -59,6 +59,7 @@ export class DocumentUpload implements OnInit {
   // Caching
   recommendationsHistory: { timestamp: Date; courses: ICourseDetail[] }[] = [];
   showHistory = false;
+
 
   constructor(
     private documentService: DocumentService,
@@ -301,3 +302,4 @@ For each recommendation include:
     this.detailedCourses = [];
     this.selectedCourseIndex = null;
   }
+}
