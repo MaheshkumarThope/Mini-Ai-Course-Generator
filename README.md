@@ -1,28 +1,66 @@
 # Mini-AI Course Generator
 
-The **Mini-AI Course Generator** is a full-stack application designed to automate the creation of educational course content using Artificial Intelligence. It features a robust Spring Boot backend for logic and AI interaction, paired with a modern Angular frontend for a seamless user experience.
+The **Mini-AI Course Generator** is a full-stack application designed to automate the creation of educational content. By integrating with OpenAI's API, it generates structured course outlines and detailed content based on user-provided topics.
 
-## 🚀 Features
+## 🏗 Project Architecture
 
-- **AI-Powered Curriculum Generation:** Automatically generates course outlines, detailed lessons, and educational modules based on user-defined topics.
-- **Modular Architecture:** Clear separation between the backend (API) and frontend (UI) for scalability and ease of maintenance.
-- **Document Management:** Support for storing and organizing generated educational content.
-- **Modern UI:** A responsive dashboard built with Angular for managing and reviewing courses.
+The project is structured as a decoupled full-stack application:
+
+* **Backend**: A Java Spring Boot application that acts as the orchestration layer for AI prompts and business logic.
+* **Frontend**: An Angular 18 web application providing a modern, responsive user interface.
+
+
 
 ---
 
-## 🛠️ Project Structure
+## 🚀 Getting Started
 
-The repository is organized into two main modules:
+### Prerequisites
+* **Java**: JDK 17 or higher.
+* **Maven**: 3.9.x for backend builds.
+* **Node.js**: v18.x or higher for the frontend.
+* **OpenAI API Key**: A valid key for course generation.
+
+### Backend Setup
+1.  Navigate to the `Backend` directory.
+2.  Set your OpenAI API Key as an environment variable:
+    ```bash
+    export OPENAI_API_KEY='your_api_key_here'
+    ```
+3.  Install dependencies and build the project:
+    ```bash
+    mvn clean install
+    ```
+4.  Run the application:
+    ```bash
+    mvn spring-boot:run
+    ```
+
+### Frontend Setup
+1.  Navigate to `Frontend/ai-course-generator`.
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Start the development server:
+    ```bash
+    ng serve
+    ```
+4.  Open your browser to `http://localhost:4200`.
+
+---
+
+## 📁 Directory Structure
 
 ```text
 Mini-AI Course Generator/
-├── Backend/                 # Spring Boot (Java) Application
-│   ├── src/                 # Core business logic and AI integration
-│   ├── documents/           # Stored generated course materials
-│   └── pom.xml             # Backend dependencies (Maven)
-├── Frontend/                # Angular (TypeScript) Application
-│   ├── ai-course-generator/ # Main Angular project source
-│   ├── src/                 # UI components and services
-│   └── package.json        # Frontend dependencies
-└── .git/                    # Version control metadata
+├── Backend/                 # Spring Boot Source Code
+│   ├── src/                 # Java source and resources
+│   ├── pom.xml              # Maven configuration
+│   └── documents/           # Project assets
+├── Frontend/                # Angular Source Code
+│   └── ai-course-generator/ # Angular workspace
+│       ├── src/             # UI Components & Services
+│       ├── package.json     # Node dependencies
+│       └── angular.json     # Angular configuration
+└── .git/                    # Version control history
